@@ -1,0 +1,37 @@
+[project]
+name = "ema-agent"
+version = "0.1.0"
+description = "Reusable RAG router-workflow engine (LlamaIndex Workflows) with hybrid FAISS+BM25 retrieval."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "tusku8" }]
+dependencies = [
+    "llama-index",
+    "llama-index-vector-stores-faiss",
+    "llama-index-embeddings-huggingface",
+    "llama-index-retrievers-bm25",
+    "llama-index-program-openai",
+    "llama-index-llms-openai",
+    "faiss-cpu",
+    "FlagEmbedding",
+    "pandas",
+    "openpyxl",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
