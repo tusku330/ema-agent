@@ -11,8 +11,8 @@ import sys
 load_dotenv()
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.store_index_init import FaissVectorStore, _new_faiss_store, embed_dim
-from src.agent_starter import Topic
+from ema_agent.store_index_init import FaissVectorStore, _new_faiss_store, embed_dim
+from ema_agent.agent_starter import Topic
 
 DATA_PATH = "./data/datasets_20260613-2.xlsx"
 STORAGE_PATH = "./storage/faq_hybrid_2"

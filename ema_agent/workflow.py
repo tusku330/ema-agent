@@ -46,7 +46,7 @@ from llama_index.core.workflow import (
 )
 from llama_index.llms.openai import OpenAI
 
-from src.agent_starter import Topic
+from ema_agent.agent_starter import Topic
 
 MAX_SUBQUERIES = 3
 
