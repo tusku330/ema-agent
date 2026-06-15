@@ -188,16 +188,29 @@ class HybridRetriever:
                 if n.metadata.get(self._filter_key) == filter_value
             ]
 
-        bm25 = BM25Retriever.from_defaults(
-            nodes=nodes,
-            similarity_top_k=similarity_top_k,
-            stemmer=self._stemmer,
-            language=self._stopwords,
-        )
-
         # Vector: FAISS has no metadata filter support — use wider top_k and
         # post-filter after fusion.
         vector = self._vector_index.as_retriever(similarity_top_k=similarity_top_k * 3)
+
+        # If the filter matches no nodes, BM25 has an empty corpus (from_defaults
+        # would raise). Fall back to vector-only — the post-filter still applies.
+        if not nodes:
+            return QueryFusionRetriever(
+                retrievers=[vector],
+                similarity_top_k=similarity_top_k * 3,
+                num_queries=1,
+                mode="reciprocal_rerank",
+                use_async=True,
+                llm=self._llm,
+            )
+
+        # bm25s raises when k > corpus size; clamp to the filtered node count.
+        bm25 = BM25Retriever.from_defaults(
+            nodes=nodes,
+            similarity_top_k=min(similarity_top_k, len(nodes)),
+            stemmer=self._stemmer,
+            language=self._stopwords,
+        )
 
         return QueryFusionRetriever(
             retrievers=[vector, bm25],
