@@ -432,5 +432,6 @@ class RouterWorkflow(Workflow):
             "response": answer,
             "score": score,
             "verdict": evaluation.verdict,
+            "context": ev.answer,        # retrieved RAG context, for history/debugging
             "sources": [],
         })
