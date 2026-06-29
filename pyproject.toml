@@ -1,6 +1,6 @@
 [project]
 name = "ema-agent"
-version = "0.1.0"
+version = "0.2.0"
 description = "Reusable RAG router-workflow engine (LlamaIndex Workflows) with hybrid FAISS+BM25 retrieval."
 readme = "README.md"
 requires-python = ">=3.10"
