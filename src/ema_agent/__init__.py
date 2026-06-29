@@ -1,9 +1,9 @@
 """ema-agent: reusable RAG router-workflow engine.
 
-Public API. Only the light, side-effect-free modules are re-exported here.
-`store_index_faq` is intentionally NOT imported: it loads an Excel dataset and
-builds the FAISS index at import time, so importing it must stay an explicit,
-opt-in choice (`from ema_agent.store_index_faq import retrieve_documents`).
+Public API. Only the light, side-effect-free building blocks are re-exported here.
+Project-specific dataset glue (Excel loading + import-time FAISS build) is NOT part
+of the library — see ``examples/faq_dataset.py`` for how a consuming app wires its
+own data into ``indexing`` + ``retrieval``.
 """
 
 from .indexing import (
@@ -13,7 +13,7 @@ from .indexing import (
     load_or_build_index,
     new_faiss_store,
 )
-from .retriever import HybridRetriever, rerank
+from .retrieval import HybridRetriever, rerank
 
 from ema_agent.agent_starter import Topic, append_session_to_history
 from ema_agent.workflow import (

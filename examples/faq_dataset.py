@@ -13,18 +13,15 @@ signatures, so existing callers
 (``from ema_agent.store_index_faq import retrieve_documents``) are unaffected.
 """
 
-from pathlib import Path
 from dotenv import load_dotenv
 from llama_index.core.schema import TextNode
 import pandas as pd
 import asyncio
-import sys
 
 load_dotenv()
-sys.path.append(str(Path(__file__).parent.parent))
 
 from ema_agent.indexing import configure_embeddings, load_or_build_index
-from ema_agent.retriever import HybridRetriever
+from ema_agent.retrieval import HybridRetriever
 from ema_agent.agent_starter import Topic
 
 DATA_PATH = "./data/datasets_20260613-2.xlsx"

@@ -37,7 +37,30 @@ It does NOT contain the backend entry point or the front-end. Those live in sepa
 
 ## File Structure
 
-ema_agent/          # The reusable agent package (published as the GitHub dependency)
-tests/              # Test app / streaming chatbot entry point used for local testing
+src/ema_agent/              # The installable package (src layout)
+  __init__.py              # The ONLY public surface: curated re-exports + __all__
+  py.typed                 # PEP 561 marker — ships type hints to consumers
+  workflow.py              # RouterWorkflow, events, pydantic schemas (control flow)
+  prompts.py               # Prompt templates + canned strings (override here)
+  agent_starter.py         # Topic enum (taxonomy) + append_session_to_history
+  indexing.py              # embedding config + FAISS + document builders
+  retrieval/               # hybrid retrieval subpackage
+    hybrid.py              # HybridRetriever (vector + BM25 fusion)
+    rerank.py              # cross-encoder rerank (lazy-loaded; [rerank] extra)
+    mongolian.py           # MN stemmer + stopwords ("language pack")
+examples/                  # NOT shipped — runnable demo + project-specific glue
+  faq_cli.py               # interactive CLI demo
+  faq_dataset.py           # Excel/Topic glue for the e-Mongolia dataset
+  llm_config.py            # OpenAI/Gemini/Ollama config (app concern, not library)
+tests/                     # pytest tests (run against the installed package)
 
+Library code stays generic in src/ema_agent/. Anything tied to THIS project's
+dataset, taxonomy values, or LLM/provider config belongs in examples/ (or in the
+consuming ema-chatbot repo), never in the package.
+
+Install for local dev: `pip install -e .[rerank,examples,dev]`.
 Do not create new top-level folders without asking.
+
+## Current Goals
+
+bet

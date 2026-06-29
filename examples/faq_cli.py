@@ -3,16 +3,12 @@ from llama_index.core.workflow import (
     HumanResponseEvent,
     InputRequiredEvent,
 )
-from pathlib import Path
 from dotenv import load_dotenv
-import pandas as pd
-import sys
 
 load_dotenv()
-sys.path.append(str(Path(__file__).parent.parent))
-from ema_agent.llm import llm
+from llm_config import llm
 from ema_agent.workflow import RouterWorkflow, StreamEvent
-from ema_agent.store_index_faq import retrieve_documents as faq_retrieve
+from faq_dataset import retrieve_documents as faq_retrieve
 
     
 SYSTEM_PROMPT = """

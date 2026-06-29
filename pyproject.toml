@@ -7,20 +7,33 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "tusku8" }]
 dependencies = [
-    "llama-index",
-    "llama-index-vector-stores-faiss",
-    "llama-index-embeddings-huggingface",
-    "llama-index-retrievers-bm25",
-    "llama-index-program-openai",
-    "llama-index-llms-openai",
+    # Depend on llama-index-core (+ the specific integrations below), NOT the
+    # `llama-index` meta-package, which drags in CLI/readers/agents/llama-cloud
+    # that this library never imports. Lower bounds pin the modern (0.14+) line;
+    # without them pip can resolve to an old self-consistent 0.12 set and
+    # downgrade a consumer's stack.
+    "llama-index-core>=0.14",
+    "llama-index-vector-stores-faiss>=0.6",
+    "llama-index-embeddings-huggingface>=0.7",
+    "llama-index-retrievers-bm25>=0.7",
+    "llama-index-llms-openai>=0.5",
     "faiss-cpu",
-    "FlagEmbedding",
     "pandas",
     "openpyxl",
-    "python-dotenv",
 ]
 
 [project.optional-dependencies]
+# Cross-encoder rerank is lazy-loaded; only install when you call use_reranker=True.
+rerank = [
+    "FlagEmbedding",
+    # FlagEmbedding's reranker uses the slow-tokenizer `prepare_for_model` API,
+    # which transformers 5.x dropped -> AttributeError on XLMRobertaTokenizer.
+    "transformers<5",
+]
+# Extras the runnable examples/ scripts need (not required by the library).
+examples = [
+    "python-dotenv",
+]
 dev = [
     "pytest",
     "pytest-asyncio",
@@ -30,8 +43,11 @@ dev = [
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["ema_agent"]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ema_agent = ["py.typed"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
