@@ -27,17 +27,18 @@ from llama_index.vector_stores.faiss import FaissVectorStore
 
 DEFAULT_EMBED_MODEL = "BAAI/bge-m3"   # 1024-dim
 DEFAULT_EMBED_DIM = 1024
-
+DEFAULT_EMBED_BATCH_SIZE = 32         #  128 - gpu a100 / 32 - cpu
 
 def configure_embeddings(
     model_name: str = DEFAULT_EMBED_MODEL,
     dim: int = DEFAULT_EMBED_DIM,
+    batch_size: int = DEFAULT_EMBED_BATCH_SIZE,
 ) -> int:
     """Set the global LlamaIndex embedding model. Returns the embedding dim.
 
     Call once at app startup before building or loading an index.
     """
-    Settings.embed_model = HuggingFaceEmbedding(model_name=model_name)
+    Settings.embed_model = HuggingFaceEmbedding(model_name=model_name, embed_batch_size=batch_size)
     return dim
 
 
@@ -65,7 +66,7 @@ def load_or_build_index(
 
     vs = new_faiss_store(dim)
     sc = StorageContext.from_defaults(vector_store=vs)
-    index = VectorStoreIndex(nodes, storage_context=sc)
+    index = VectorStoreIndex(nodes, storage_context=sc, show_progress=True)
     index.storage_context.persist(persist_dir=storage_path)
     return index
 
