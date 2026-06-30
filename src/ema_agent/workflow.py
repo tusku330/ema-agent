@@ -30,6 +30,7 @@ from typing import Any, Awaitable, Callable, Literal
 
 from pydantic import BaseModel
 
+from llama_index.core import PromptTemplate
 from llama_index.core.llms import ChatMessage
 from llama_index.core.llms.function_calling import FunctionCallingLLM
 from llama_index.core.memory import ChatMemoryBuffer
@@ -136,12 +137,20 @@ class RouterWorkflow(Workflow):
         retriever: RetrieverFn,
         llm: FunctionCallingLLM | None = None,
         system_prompt: str | None = None,
+        route_prompt: PromptTemplate | None = None,
+        route_schema: type[BaseModel] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.retriever = retriever
         self.llm = llm or OpenAI(model="gpt-4o-mini", temperature=0.1)
         self.system_prompt = system_prompt or _DEFAULT_SYSTEM_PROMPT
+        # Route prompt + decision schema are injectable so each app picks its own
+        # taxonomy. Defaults are the e-business FAQ pair; the decision MUST expose
+        # `.intent` (chat|clarify|retrieve|complex) and `.topics` (opaque filter
+        # list forwarded verbatim to the retriever).
+        self.route_prompt = route_prompt or _ROUTE_TMPL
+        self.route_schema = route_schema or RouteDecision
 
     # ── helpers ────────────────────────────────────────────────────────────────
 
@@ -168,8 +177,8 @@ class RouterWorkflow(Workflow):
         history = "\n".join(
             f"{m.role}: {m.content}" for m in memory.get()[-4:] if m.role != "system"
         )
-        decision: RouteDecision = await self.llm.astructured_predict(
-            RouteDecision, _ROUTE_TMPL, query=query, history=history
+        decision = await self.llm.astructured_predict(
+            self.route_schema, self.route_prompt, query=query, history=history
         )
         print(f"[route] intent={decision.intent} topics={decision.topics}")
 
