@@ -115,6 +115,13 @@ class RouteDecision(BaseModel):
     # taxonomy there, not here. Empty list = no topic applies (NONE is a
     # retriever sentinel, not a router choice — don't emit it).
     topics: list[Topic] = []
+    # A context-independent rewrite of the user's message. Follow-ups lean on
+    # earlier turns ("и-монголоос захиалж болох уу" = order WHAT?), and the
+    # retriever embeds this text verbatim, so it must carry the referent.
+    # Resolve pronouns / omitted subject-object / elliptical follow-ups from the
+    # conversation history; copy the query unchanged when it is already
+    # self-contained. Empty string falls back to the raw query.
+    standalone_query: str = ""
 
 
 class DecomposedQueries(BaseModel):
@@ -170,9 +177,9 @@ class RouterWorkflow(Workflow):
         query: str = ev.input
 
         memory = await self._get_memory(ctx)
+
         memory.put(ChatMessage(role="user", content=query))
         await ctx.store.set("memory", memory)
-        await ctx.store.set("original_query", query)
 
         history = "\n".join(
             f"{m.role}: {m.content}" for m in memory.get()[-4:] if m.role != "system"
@@ -180,17 +187,26 @@ class RouterWorkflow(Workflow):
         decision = await self.llm.astructured_predict(
             self.route_schema, self.route_prompt, query=query, history=history
         )
+        # Retrieve + synthesize against the router's context-resolved rewrite, so a
+        # follow-up like "и-монголоос захиалж болох уу" carries its referent into
+        # the retriever instead of being embedded bare. getattr keeps injected
+        # schemas without the field working (they fall back to the raw query);
+        # memory still holds the raw user turn verbatim.
+        standalone = (getattr(decision, "standalone_query", "") or "").strip() or query
+        await ctx.store.set("original_query", standalone)
         print(f"[route] intent={decision.intent} topics={decision.topics}")
+        if standalone != query:
+            print(f"[route] rewrote follow-up -> {standalone!r}")
 
         if decision.intent == "chat":
             return ChatEvent(query=query)
         if decision.intent == "clarify":
             # Hand off to the HITL clarify step; it generates the question,
             # pauses for the human reply, then resumes into retrieval.
-            return ClarifyEvent(original_query=query, topics=decision.topics)
+            return ClarifyEvent(original_query=standalone, topics=decision.topics)
         if decision.intent == "complex":
-            return ComplexEvent(query=query, topics=decision.topics)
-        return RetrieveEvent(query=query, topics=decision.topics, retry=0)
+            return ComplexEvent(query=standalone, topics=decision.topics)
+        return RetrieveEvent(query=standalone, topics=decision.topics, retry=0)
 
     # ── step 2a: chitchat (no retrieval, no scoring) ───────────────────────────
 

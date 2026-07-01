@@ -18,20 +18,26 @@ class Topic(str, Enum):
     topic; the router signals it with an empty list rather than emitting NONE.
     """
 
-    NEW_COMPANY = "new_company"
-    COMPANY_VERIFICATION = "company_verification"
-    PROPERTY = "property"
-    VEHICLE = "vehicle"
-    FINANCIAL_COMPLIANCE = "financial_compliance"
-    TAX = "tax"
-    INSURANCE = "insurance"
-    REGULATORY_PERMITS = "regulatory_permits"
-    E_SIGN = "e-sign"
-    GENERAL = "general"
-    SYSTEM = "system"
-    NEW_E_BUSINESS = "new_e-business"
-    OTHER = "other"
-    NONE = "none"
+    # NEW_COMPANY = "new_company"
+    # COMPANY_VERIFICATION = "company_verification"
+    # PROPERTY = "property"
+    # VEHICLE = "vehicle"
+    # FINANCIAL_COMPLIANCE = "financial_compliance"
+    # TAX = "tax"
+    # INSURANCE = "insurance"
+    # REGULATORY_PERMITS = "regulatory_permits"
+    # E_SIGN = "e-sign"
+    # GENERAL = "general"
+    # SYSTEM = "system"
+    # NEW_E_BUSINESS = "new_e-business"
+    # OTHER = "other"
+    # NONE = "none"
+
+    EMPLOYEE = "employee"
+    HISTORY = "history"
+    PROFILE = "profile"
+    ALL = "all"
+
 
 def append_session_to_history(
     file_path: str, session_id: str, user_id: str, start_timestamp: str, messages: list
